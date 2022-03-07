@@ -18,7 +18,7 @@ void print_help(int exval);
 int try_smart_eaplogin(void);
 
 static const char default_bind_ip[20] = "0.0.0.0";
-
+static const char default_pid_path[20] = "/tmp/drcom.pid";
 int main(int argc, char *argv[]) {
     if (argc == 1) {
         print_help(1);
@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
             {"log", required_argument, 0, 'l'},
 #ifdef linux
             {"daemon", no_argument, 0, 'd'},
+            {"pid", required_argument, 0, 'p'},
             {"802.1x", no_argument, 0, 'x'},
 #endif
             {"eternal", no_argument, 0, 'e'},
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]) {
         int c;
         int option_index = 0;
 #ifdef linux
-        c = getopt_long(argc, argv, "m:c:b:l:dxevh", long_options, &option_index);
+        c = getopt_long(argc, argv, "m:c:b:l:p:dxevh", long_options, &option_index);
 #else
         c = getopt_long(argc, argv, "m:c:b:l:evh", long_options, &option_index);
 #endif
@@ -101,6 +102,14 @@ int main(int argc, char *argv[]) {
             case 'd':
                 daemon_flag = 1;
                 break;
+            case 'p':
+                if (mode != NULL) {
+                    char path_p[PATH_MAX];
+                    realpath(optarg, path_p);
+                    pid_path = strdup(path_p);
+                    daemon_flag = 1;
+                }
+                break;
             case 'x':
                 eapol_flag = 1;
                 break;
@@ -127,6 +136,9 @@ int main(int argc, char *argv[]) {
 #endif
 #ifdef linux
         if (daemon_flag) {
+            if (pid_path == NULL || strlen(pid_path)==0){
+                pid_path = strdup(default_pid_path);
+            }
             daemonise();
         }
 #endif
@@ -178,6 +190,7 @@ void print_help(int exval) {
     printf("\t--log <LOGPATH>, -l <LOGPATH>         specify log file\n");
 #ifdef linux
     printf("\t--daemon, -d                          set daemon flag\n");
+    printf("\t--pid <PIDPATH>, -p <PIDPATH>         specify pid location(default is /tmp/drcom.pid)\n");
     printf("\t--802.1x, -x                          enable 802.1x\n");
 #endif
     printf("\t--eternal, -e                         set eternal flag\n");
