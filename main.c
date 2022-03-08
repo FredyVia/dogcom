@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
     }
 
     char *file_path;
+    char path_tmp[PATH_MAX];
 
     while (1) {
         static const struct option long_options[] = {
@@ -68,9 +69,14 @@ int main(int argc, char *argv[]) {
                 if (mode != NULL) {
 #endif
 #ifdef linux
-                    char path_c[PATH_MAX];
-                    realpath(optarg, path_c);
-                    file_path = strdup(path_c);
+                    memset(path_tmp,'\0',sizeof(path_tmp));
+                    realpath(optarg, path_tmp);
+                    if(strlen(path_tmp) == 0){
+                      file_path = strdup(optarg);
+                    }
+                    else{
+                      file_path = strdup(path_tmp);
+                    }
 #else
                 file_path = optarg;
 #endif
@@ -86,9 +92,14 @@ int main(int argc, char *argv[]) {
                 if (mode != NULL) {
 #endif
 #ifdef linux
-                    char path_l[PATH_MAX];
-                    realpath(optarg, path_l);
-                    log_path = strdup(path_l);
+                    memset(path_tmp,'\0',sizeof(path_tmp));
+                    realpath(optarg, path_tmp);
+                    if(strlen(path_tmp)==0){
+                      log_path = strdup(optarg);
+                    }
+                    else{
+                      log_path = strdup(path_tmp);
+                    }
 #else
                 log_path = optarg;
 #endif
